@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# weights & data
+weights/
+*.pth
+*.pt
+*.safetensors
+Benchmarks/
+benchmarks_data/
+
+# outputs
+outputs/
+samples/
+*.png
+!assets/*.png
+
+# env / editors
+.venv/
+venv/
+.env
+.idea/
+.vscode/
+.DS_Store
+
+# logs
+*.log
+wandb/

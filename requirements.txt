@@ -1,0 +1,22 @@
+# Core
+torch==2.5.1                 # tested with CUDA 12.4
+torchvision
+transformers>=4.40           # flan-t5-xl text encoder + tokenizer
+timm                         # required by the Infinity backbone
+numpy
+Pillow
+tqdm
+einops
+pyyaml
+safetensors                  # 8B sharded checkpoints
+opencv-python                # infinity VAE utilities
+imageio
+pandas
+
+# Prompt parsing. Without spaCy, vista.parsing falls back to its rule-based
+# parser automatically; the transformer model gives noticeably better spans.
+spacy>=3.7
+# python -m spacy download en_core_web_trf
+
+# Optional: FlashAttention. The backbone falls back to PyTorch SDPA when absent.
+# flash-attn>=2.5
