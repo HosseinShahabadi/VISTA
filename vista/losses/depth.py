@@ -71,6 +71,7 @@ def depth_occlusion_loss(
     -------
     Scalar tensor with grad_fn.
     """
+    
     a    = attn[0]           # [Lq, Lk]
     Lq   = a.shape[0]
     Lk   = a.shape[1]
@@ -78,7 +79,7 @@ def depth_occlusion_loss(
     if side * side != Lq:
         return torch.tensor(0.0, device=attn.device, dtype=attn.dtype)
 
-    grid_x, grid_y = build_grid(side, attn.device, attn.dtype)
+    grid_x, grid_y = _build_grid(side, attn.device, attn.dtype)
     coords = torch.stack([grid_x, grid_y], dim=-1)   # [Lq, 2]
 
     total_sep = torch.zeros(1, device=attn.device, dtype=attn.dtype)
@@ -92,8 +93,24 @@ def depth_occlusion_loss(
 
         # In "X behind Y": noun_a=X (occluded/behind), noun_b=Y (occluder/front)
         # We call them B (behind=noun_a) and A (front=noun_b)
-        b_ids = [t for t in pair.get('noun_a_t5_ids', []) if t < Lk]   # behind
-        a_ids = [t for t in pair.get('noun_b_t5_ids', []) if t < Lk]   # in front
+        _FRONT_RELATIONS = {"in front of", "front"}
+        _BEHIND_RELATIONS = {"behind", "hidden by", "hidden"}
+
+        relation = pair.get('relation', '')
+        if relation in _BEHIND_RELATIONS:
+            print("########## it is behind ############3")
+            b_ids = [t for t in pair.get('noun_a_t5_ids', []) if t < Lk]   # behind
+            a_ids = [t for t in pair.get('noun_b_t5_ids', []) if t < Lk]   # in front
+        elif relation in _FRONT_RELATIONS:
+            print("########## it is front ############3")
+            a_ids = [t for t in pair.get('noun_a_t5_ids', []) if t < Lk]   # behind
+            b_ids = [t for t in pair.get('noun_b_t5_ids', []) if t < Lk]   # in front
+        else:
+            print("########## it is NONE ############3")
+            continue
+
+        # b_ids = [t for t in pair.get('noun_a_t5_ids', []) if t < Lk]   # behind
+        # a_ids = [t for t in pair.get('noun_b_t5_ids', []) if t < Lk]   # in front
 
         if not a_ids or not b_ids:
             continue
@@ -127,7 +144,7 @@ def depth_occlusion_loss(
 
         # ── Step 3: Soft perimeter of B ────────────────────────────
         # edge_b[i] is large where B's attention map changes sharply.
-        edge_b = soft_perimeter_vectorised(prob_b, side)   # [Lq], grad_fn
+        edge_b = _soft_perimeter_vectorised(prob_b, side)   # [Lq], grad_fn
 
         # ── Step 4: Facing-perimeter selection ────────────────────
         # Score each token by: how much it is on B's edge AND
