@@ -79,7 +79,7 @@ def depth_occlusion_loss(
     if side * side != Lq:
         return torch.tensor(0.0, device=attn.device, dtype=attn.dtype)
 
-    grid_x, grid_y = _build_grid(side, attn.device, attn.dtype)
+    grid_x, grid_y = build_grid(side, attn.device, attn.dtype)
     coords = torch.stack([grid_x, grid_y], dim=-1)   # [Lq, 2]
 
     total_sep = torch.zeros(1, device=attn.device, dtype=attn.dtype)
@@ -144,7 +144,7 @@ def depth_occlusion_loss(
 
         # ── Step 3: Soft perimeter of B ────────────────────────────
         # edge_b[i] is large where B's attention map changes sharply.
-        edge_b = _soft_perimeter_vectorised(prob_b, side)   # [Lq], grad_fn
+        edge_b = soft_perimeter_vectorised(prob_b, side)   # [Lq], grad_fn
 
         # ── Step 4: Facing-perimeter selection ────────────────────
         # Score each token by: how much it is on B's edge AND
